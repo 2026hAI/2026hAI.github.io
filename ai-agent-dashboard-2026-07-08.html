@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Agent每日資訊看板</title>
+<style>
+  :root{
+    --bg:#f5f7fb;
+    --card:#ffffff;
+    --primary:#4f46e5;
+    --primary-light:#eef2ff;
+    --accent1:#4f46e5;
+    --accent2:#0891b2;
+    --accent3:#d97706;
+    --text:#1f2937;
+    --muted:#6b7280;
+    --border:#e5e7eb;
+    --shadow:0 1px 3px rgba(0,0,0,0.06),0 1px 2px rgba(0,0,0,0.04);
+    --shadow-hover:0 10px 25px rgba(79,70,229,0.12),0 4px 10px rgba(0,0,0,0.05);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC","PingFang TC",sans-serif;
+    background:linear-gradient(180deg,#f5f7fb 0%,#eef1f8 100%);
+    color:var(--text);
+    min-height:100vh;
+  }
+  header{
+    max-width:1100px;
+    margin:0 auto;
+    padding:36px 24px 20px;
+    text-align:center;
+  }
+  header h1{
+    font-size:28px;
+    font-weight:800;
+    margin:0 0 6px;
+    background:linear-gradient(90deg,#4f46e5,#0891b2);
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+  }
+  header .subtitle{
+    color:var(--muted);
+    font-size:14px;
+  }
+  .controls{
+    max-width:1100px;
+    margin:0 auto 24px;
+    padding:0 24px;
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    justify-content:center;
+  }
+  .filter-btn{
+    border:1px solid var(--border);
+    background:var(--card);
+    color:var(--text);
+    padding:8px 16px;
+    border-radius:999px;
+    font-size:13px;
+    cursor:pointer;
+    transition:all .15s ease;
+  }
+  .filter-btn:hover{ border-color:var(--primary); color:var(--primary); }
+  .filter-btn.active{ background:var(--primary); border-color:var(--primary); color:#fff; }
+
+  main{
+    max-width:1100px;
+    margin:0 auto;
+    padding:0 24px 60px;
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
+    gap:20px;
+  }
+  section.block{
+    background:var(--card);
+    border-radius:16px;
+    box-shadow:var(--shadow);
+    padding:20px;
+    display:flex;
+    flex-direction:column;
+    min-height:200px;
+  }
+  section.block h2{
+    font-size:16px;
+    font-weight:700;
+    margin:0 0 4px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  section.block .badge{
+    display:inline-block;
+    width:10px;height:10px;border-radius:50%;
+  }
+  .block1 .badge{background:var(--accent1);}
+  .block2 .badge{background:var(--accent2);}
+  .block3 .badge{background:var(--accent3);}
+  section.block .count{
+    font-size:12px;
+    color:var(--muted);
+    margin:0 0 14px;
+  }
+  .card{
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:14px 16px;
+    margin-bottom:12px;
+    text-decoration:none;
+    color:inherit;
+    display:block;
+    transition:all .15s ease;
+    background:#fff;
+  }
+  .card:last-child{margin-bottom:0;}
+  .card:hover{
+    box-shadow:var(--shadow-hover);
+    transform:translateY(-2px);
+    border-color:var(--primary);
+  }
+  .card .title{
+    font-size:14.5px;
+    font-weight:600;
+    line-height:1.4;
+    margin-bottom:6px;
+    color:var(--text);
+  }
+  .card .meta{
+    display:flex;
+    gap:8px;
+    align-items:center;
+    font-size:12px;
+    color:var(--muted);
+    margin-bottom:6px;
+    flex-wrap:wrap;
+  }
+  .card .meta .source{
+    font-weight:600;
+    color:var(--primary);
+  }
+  .card .meta .dot{opacity:.5;}
+  .card .summary{
+    font-size:13px;
+    color:#374151;
+    line-height:1.5;
+  }
+  .empty{
+    color:var(--muted);
+    font-size:13px;
+    text-align:center;
+    padding:30px 10px;
+  }
+  footer{
+    text-align:center;
+    color:var(--muted);
+    font-size:12px;
+    padding:20px 0 40px;
+  }
+  @media (max-width:700px){
+    main{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>AI Agent每日資訊看板</h1>
+  <div class="subtitle">資料更新日期：2026-07-08　｜　彙整過去 7 天（2026-07-01 至 2026-07-08）AI Agent 相關資訊</div>
+</header>
+
+<div class="controls">
+  <button class="filter-btn active" data-filter="all">全部</button>
+  <button class="filter-btn" data-filter="block1">技術更新</button>
+  <button class="filter-btn" data-filter="block2">媒體試用心得</button>
+  <button class="filter-btn" data-filter="block3">新產品介紹</button>
+</div>
+
+<main>
+  <section class="block block1" data-block="block1">
+    <h2><span class="badge"></span>各家推出的技術更新</h2>
+    <div class="count">共 5 則 · OpenAI／Google Gemini／Claude／Openclaw</div>
+
+    <a class="card" href="https://blog.google/innovation-and-ai/models-and-research/gemini-models/gemini-3-5/" target="_blank" rel="noopener">
+      <div class="title">Gemini 3.5 系列擴大提供（Gemini 3.5 Flash 全面上線各平台）</div>
+      <div class="meta"><span class="source">Google Blog</span><span class="dot">·</span><span>2026-07-07</span></div>
+      <div class="summary">Google 宣布 Gemini 3.5 Flash 全面開放於 Gemini App、AI Studio、Android Studio 等平台，主打百萬級 token 長文本與更強的程式碼／代理能力。</div>
+    </a>
+
+    <a class="card" href="https://techcrunch.com/2026/07/07/the-coding-agent-wars-are-spilling-into-the-rest-of-the-office-claude-cowork/" target="_blank" rel="noopener">
+      <div class="title">Claude Cowork 擴展至手機與網頁版</div>
+      <div class="meta"><span class="source">TechCrunch</span><span class="dot">·</span><span>2026-07-07</span></div>
+      <div class="summary">Anthropic 宣布 Claude Cowork 桌面代理工具正式擴展至網頁與 iPhone，可跨裝置接續任務並在雲端背景執行。</div>
+    </a>
+
+    <a class="card" href="https://www.macrumors.com/2026/07/07/claude-cowork-mobile-web/" target="_blank" rel="noopener">
+      <div class="title">Claude Cowork 網頁與行動版上線細節</div>
+      <div class="meta"><span class="source">MacRumors</span><span class="dot">·</span><span>2026-07-07</span></div>
+      <div class="summary">用戶可在筆電關閉時仍讓任務於雲端持續執行，並跨裝置（網頁／iPhone）同步進度。</div>
+    </a>
+
+    <a class="card" href="https://www.cnbc.com/2026/07/06/alibaba-anthropic-ai-ban-claude-china.html" target="_blank" rel="noopener">
+      <div class="title">阿里巴巴禁止員工使用 Anthropic AI，指控「蒸餾攻擊」</div>
+      <div class="meta"><span class="source">CNBC</span><span class="dot">·</span><span>2026-07-06</span></div>
+      <div class="summary">阿里巴巴以指控 Anthropic 涉及模型蒸餾攻擊為由，禁止員工在工作中使用 Claude 相關 AI 工具。</div>
+    </a>
+
+    <a class="card" href="https://www.macrumors.com/2026/07/06/claude-outage-currently-affecting-multiple-models/" target="_blank" rel="noopener">
+      <div class="title">Claude 服務多模型一度中斷</div>
+      <div class="meta"><span class="source">MacRumors</span><span class="dot">·</span><span>2026-07-06</span></div>
+      <div class="summary">Anthropic 旗下多個 Claude 模型一度發生服務中斷，影響用戶使用，後續已修復。</div>
+    </a>
+  </section>
+
+  <section class="block block2" data-block="block2">
+    <h2><span class="badge"></span>各媒體的試用心得</h2>
+    <div class="count">共 5 則 · 教學／技巧／初學者導向</div>
+
+    <a class="card" href="https://claude.com/blog/cowork-web-mobile" target="_blank" rel="noopener">
+      <div class="title">Claude Cowork is coming to mobile and web</div>
+      <div class="meta"><span class="source">Claude by Anthropic（官方部落格）</span><span class="dot">·</span><span>2026-07-08</span></div>
+      <div class="summary">官方公告附「Getting started」步驟說明，是初學者了解如何在手機上開始使用 AI 代理任務的最直接指南。</div>
+    </a>
+
+    <a class="card" href="https://engincanveske.substack.com/p/this-week-in-ai-4-july-2-8-2026" target="_blank" rel="noopener">
+      <div class="title">This Week in AI #4 – July 2-8, 2026</div>
+      <div class="meta"><span class="source">Engincan Veske（Substack）</span><span class="dot">·</span><span>2026-07-08</span></div>
+      <div class="summary">個人撰寫的一週 AI 新聞精選，用輕鬆易懂的語氣總結本週 AI Agent 重要動態，適合固定追蹤的初學者。</div>
+    </a>
+
+    <a class="card" href="https://techcrunch.com/2026/07/07/the-coding-agent-wars-are-spilling-into-the-rest-of-the-office-claude-cowork/" target="_blank" rel="noopener">
+      <div class="title">Claude Cowork expands to mobile and web</div>
+      <div class="meta"><span class="source">TechCrunch</span><span class="dot">·</span><span>2026-07-07</span></div>
+      <div class="summary">深入報導 Cowork 新增手機／網頁版的使用情境，例如手機收到需人工決策的通知，幫助理解代理如何融入日常工作。</div>
+    </a>
+
+    <a class="card" href="https://9to5mac.com/2026/07/07/anthropic-expanding-claude-cowork-to-mobile-and-web-details-here/" target="_blank" rel="noopener">
+      <div class="title">Anthropic expanding Claude Cowork to mobile and web, details here</div>
+      <div class="meta"><span class="source">9to5Mac</span><span class="dot">·</span><span>2026-07-07</span></div>
+      <div class="summary">以蘋果用戶角度簡明整理 Cowork 三大變化：工作跟著你走、背景持續執行、重大決策才通知你，適合 iPhone/iPad 初學者。</div>
+    </a>
+
+    <a class="card" href="https://www.buildfastwithai.com/blogs/ai-news-today-july-7-2026" target="_blank" rel="noopener">
+      <div class="title">AI News Today July 7 2026: 15 Biggest Stories</div>
+      <div class="meta"><span class="source">Build Fast With AI</span><span class="dot">·</span><span>2026-07-07</span></div>
+      <div class="summary">條列式整理當天 15 則最大 AI 新聞（含多則 Agent 相關），格式簡短易讀，方便初學者快速瀏覽重點。</div>
+    </a>
+  </section>
+
+  <section class="block block3" data-block="block3">
+    <h2><span class="badge"></span>新產品的介紹</h2>
+    <div class="count">共 5 則 · 新產品／應用與安裝技巧</div>
+
+    <a class="card" href="https://martechedge.com/news/profound-launches-aim-to-turn-ai-search-intelligence-into-marketing-execution" target="_blank" rel="noopener">
+      <div class="title">Profound 推出 Aim——行銷團隊的常駐後台 AI Agent</div>
+      <div class="meta"><span class="source">MarTech Edge</span><span class="dot">·</span><span>2026-07-02</span></div>
+      <div class="summary">Aim 持續監測 AI 搜尋訊號（品牌能見度、引用、情緒），自動生成行銷專案並派工給專屬 Agent 執行。</div>
+    </a>
+
+    <a class="card" href="https://agentic.ai/news" target="_blank" rel="noopener">
+      <div class="title">Candidly Intelligence Center 新增六項 AI Agent 功能</div>
+      <div class="meta"><span class="source">Agentic.ai News</span><span class="dot">·</span><span>2026-07-02</span></div>
+      <div class="summary">Candidly 擴充財務指導平台，推出可組合式的多個可配置 Agent，強化企業財務諮詢自動化能力。</div>
+    </a>
+
+    <a class="card" href="https://x.ai/news/grok-voice-agent-builder" target="_blank" rel="noopener">
+      <div class="title">xAI 推出 Grok Voice Agent Builder（免程式碼語音 Agent 建構工具）</div>
+      <div class="meta"><span class="source">x.ai 官方</span><span class="dot">·</span><span>2026-07-01</span></div>
+      <div class="summary">任何人可在兩分鐘內用無程式碼介面建立語音客服 Agent，收費每分鐘僅 0.05 美元，適合初學者快速上手。</div>
+    </a>
+
+    <a class="card" href="https://www.globenewswire.com/news-release/2026/07/01/3320650/0/en/nsknox-launches-ai-agent-caller-replacing-manual-vendor-callbacks-with-an-autonomous-multilingual-agent.html" target="_blank" rel="noopener">
+      <div class="title">nsKnox 推出 AI Agent Caller，取代人工供應商回撥驗證</div>
+      <div class="meta"><span class="source">GlobeNewswire</span><span class="dot">·</span><span>2026-07-01</span></div>
+      <div class="summary">自主多語言 AI Agent 可從付款記錄一鍵觸發通話，自動完成排程、對話與稽核紀錄，用於防範企業付款詐騙。</div>
+    </a>
+
+    <a class="card" href="https://www.computerweekly.com/news/366642566/Extreme-Connect-26-Agent-ONE-takes-forward-network-AI" target="_blank" rel="noopener">
+      <div class="title">Extreme Networks 推出 Agent ONE Coworker（企業網路 AI 協作 Agent）</div>
+      <div class="meta"><span class="source">Computer Weekly</span><span class="dot">·</span><span>2026-07-01</span></div>
+      <div class="summary">以對話介面提供網路數據查詢、自動化工單處理與即時儀表板，需人工核准後才執行變更，適合 IT 新手理解落地方式。</div>
+    </a>
+  </section>
+</main>
+
+<footer>
+  資料由 3 個搜尋 Agent 自動彙整產生，僅供參考，請以官方原文為準。
+</footer>
+
+<script>
+  const buttons = document.querySelectorAll('.filter-btn');
+  const blocks = document.querySelectorAll('section.block');
+  buttons.forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      buttons.forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      const f = btn.dataset.filter;
+      blocks.forEach(b=>{
+        if(f==='all' || b.dataset.block===f){
+          b.style.display='flex';
+        } else {
+          b.style.display='none';
+        }
+      });
+    });
+  });
+</script>
+
+</body>
+</html>
