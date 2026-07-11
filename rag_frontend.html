@@ -1,548 +1,564 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-Hant">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PDF RAG Q&A System</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PDF 智慧問答系統</title>
+<style>
+  :root {
+    --rose-600: #d6336c;
+    --rose-500: #e5537a;
+    --rose-400: #f06595;
+    --rose-100: #ffe3ec;
+    --rose-50:  #fff5f8;
+    --ink-900:  #212529;
+    --ink-600:  #495057;
+    --ink-400:  #868e96;
+    --line:     #f1d4de;
+    --ok-bg:    #e6f9f0;
+    --ok-fg:    #0f7b52;
+    --err-bg:   #fdecee;
+    --err-fg:   #c0392b;
+    --info-bg:  #fff4d6;
+    --info-fg:  #8a6d1a;
+  }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #ffa6c1 0%, #ff6b9d 100%);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
 
-        .container {
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(255, 107, 157, 0.3);
-            max-width: 900px;
-            width: 100%;
-            overflow: hidden;
-        }
+  body {
+    font-family: "Noto Sans TC", "Microsoft JhengHei", "Segoe UI", sans-serif;
+    background: linear-gradient(160deg, #fdf4f7 0%, #f9e3ec 60%, #f5d5e3 100%);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 32px 16px;
+    color: var(--ink-900);
+  }
 
-        .header {
-            background: linear-gradient(135deg, #ffa6c1 0%, #ff6b9d 100%);
-            color: white;
-            padding: 30px;
-            text-align: center;
-        }
+  .container {
+    width: 100%;
+    max-width: 860px;
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: 0 24px 64px rgba(214, 51, 108, 0.16);
+    overflow: hidden;
+  }
 
-        .header h1 {
-            font-size: 28px;
-            margin-bottom: 10px;
-        }
+  /* ── Header ─────────────────────────── */
+  .header {
+    background: linear-gradient(120deg, var(--rose-600) 0%, var(--rose-400) 100%);
+    color: #fff;
+    padding: 28px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .header h1 { font-size: 22px; font-weight: 700; letter-spacing: 0.5px; }
+  .header h1 .sub { display: block; font-size: 13px; font-weight: 400; opacity: 0.85; margin-top: 4px; }
 
-        .header p {
-            opacity: 0.9;
-            font-size: 14px;
-        }
+  .steps { display: flex; gap: 8px; font-size: 13px; }
+  .step {
+    display: flex; align-items: center; gap: 6px;
+    background: rgba(255, 255, 255, 0.18);
+    padding: 6px 14px;
+    border-radius: 999px;
+    transition: background 0.3s;
+  }
+  .step.active { background: rgba(255, 255, 255, 0.95); color: var(--rose-600); font-weight: 700; }
+  .step .dot {
+    width: 18px; height: 18px; border-radius: 50%;
+    background: rgba(255,255,255,0.35);
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 11px;
+  }
+  .step.active .dot { background: var(--rose-600); color: #fff; }
 
-        .upload-section {
-            padding: 30px;
-            border-bottom: 2px solid #ffe0ec;
-        }
+  /* ── Upload ─────────────────────────── */
+  .upload-section { padding: 28px 32px; border-bottom: 1px solid var(--line); }
 
-        .upload-area {
-            border: 3px dashed #ff6b9d;
-            border-radius: 15px;
-            padding: 40px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s;
-            background: #fff5f8;
-        }
+  .upload-area {
+    border: 2px dashed var(--rose-400);
+    border-radius: 14px;
+    padding: 36px 24px;
+    text-align: center;
+    cursor: pointer;
+    background: var(--rose-50);
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .upload-area:hover, .upload-area.dragover { background: var(--rose-100); border-color: var(--rose-600); }
+  .upload-area .icon { font-size: 42px; margin-bottom: 10px; }
+  .upload-area h3 { font-size: 17px; font-weight: 600; color: var(--ink-900); }
+  .upload-area p  { font-size: 13px; color: var(--ink-400); margin-top: 8px; line-height: 1.7; }
 
-        .upload-area:hover {
-            background: #ffe8f0;
-            border-color: #ff4081;
-        }
+  .file-input { display: none; }
 
-        .upload-area.dragover {
-            background: #ffd6e7;
-            border-color: #ff4081;
-        }
+  .file-chip {
+    display: none;
+    align-items: center;
+    gap: 10px;
+    margin-top: 14px;
+    padding: 12px 16px;
+    background: var(--rose-50);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    font-size: 14px;
+  }
+  .file-chip .name { font-weight: 600; color: var(--ink-900); word-break: break-all; }
+  .file-chip .size { color: var(--ink-400); font-size: 12px; white-space: nowrap; }
 
-        .upload-icon {
-            font-size: 48px;
-            margin-bottom: 15px;
-        }
+  .actions { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
 
-        .file-input {
-            display: none;
-        }
+  .btn {
+    border: none;
+    border-radius: 10px;
+    padding: 12px 24px;
+    font-size: 15px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
+  }
+  .btn.primary {
+    background: linear-gradient(120deg, var(--rose-600), var(--rose-400));
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(214, 51, 108, 0.35);
+  }
+  .btn.primary:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(214, 51, 108, 0.4); }
+  .btn.ghost { background: #fff; color: var(--rose-600); border: 1px solid var(--rose-400); }
+  .btn.ghost:hover:not(:disabled) { background: var(--rose-50); }
+  .btn:disabled { opacity: 0.45; cursor: not-allowed; box-shadow: none; }
 
-        .upload-btn {
-            background: linear-gradient(135deg, #ffa6c1 0%, #ff6b9d 100%);
-            color: white;
-            border: none;
-            padding: 12px 30px;
-            border-radius: 25px;
-            cursor: pointer;
-            font-size: 16px;
-            margin-top: 15px;
-            transition: transform 0.2s;
-        }
+  /* ── Status bar ─────────────────────── */
+  .status {
+    display: none;
+    margin: 16px 32px 0;
+    padding: 11px 16px;
+    border-radius: 10px;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  .status.success { display: block; background: var(--ok-bg);  color: var(--ok-fg); }
+  .status.error   { display: block; background: var(--err-bg); color: var(--err-fg); }
+  .status.info    { display: block; background: var(--info-bg); color: var(--info-fg); }
 
-        .upload-btn:hover {
-            transform: scale(1.05);
-        }
+  /* ── Chat ───────────────────────────── */
+  .chat-section { padding: 24px 32px 28px; display: flex; flex-direction: column; height: 520px; }
+  .chat-section.disabled { opacity: 0.45; pointer-events: none; }
 
-        .upload-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
+  .chat-title {
+    font-size: 14px; color: var(--ink-600); margin-bottom: 12px;
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  }
+  .doc-badge {
+    display: none;
+    background: var(--rose-100); color: var(--rose-600);
+    font-weight: 600; font-size: 12px;
+    padding: 3px 12px; border-radius: 999px;
+  }
 
-        .file-info {
-            margin-top: 15px;
-            padding: 10px;
-            background: #ffe8f0;
-            border-radius: 8px;
-            display: none;
-            color: #c2185b;
-        }
+  .messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    background: #fbf7f9;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    margin-bottom: 14px;
+  }
+  .messages::-webkit-scrollbar { width: 8px; }
+  .messages::-webkit-scrollbar-track { background: transparent; }
+  .messages::-webkit-scrollbar-thumb { background: #eebdd0; border-radius: 8px; }
 
-        .chat-section {
-            padding: 30px;
-            height: 500px;
-            display: flex;
-            flex-direction: column;
-        }
+  .message {
+    max-width: 82%;
+    margin-bottom: 12px;
+    padding: 11px 16px;
+    border-radius: 14px;
+    font-size: 14.5px;
+    line-height: 1.75;
+    word-break: break-word;
+    animation: fadeIn 0.25s ease;
+  }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 
-        .messages {
-            flex: 1;
-            overflow-y: auto;
-            margin-bottom: 20px;
-            padding: 15px;
-            background: #fff5f8;
-            border-radius: 15px;
-        }
+  .message.user {
+    margin-left: auto;
+    background: linear-gradient(120deg, var(--rose-600), var(--rose-400));
+    color: #fff;
+    border-bottom-right-radius: 4px;
+  }
+  .message.assistant {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-bottom-left-radius: 4px;
+  }
+  .message.system { background: var(--info-bg); color: var(--info-fg); font-size: 13px; }
+  .message.error-msg { background: var(--err-bg); color: var(--err-fg); }
 
-        .message {
-            margin-bottom: 15px;
-            padding: 12px 18px;
-            border-radius: 18px;
-            max-width: 80%;
-            word-wrap: break-word;
-            animation: fadeIn 0.3s;
-        }
+  /* markdown 呈現 */
+  .message.assistant h3, .message.assistant h4 { margin: 8px 0 4px; font-size: 15px; color: var(--rose-600); }
+  .message.assistant ul, .message.assistant ol { margin: 4px 0 4px 22px; }
+  .message.assistant li { margin: 2px 0; }
+  .message.assistant p { margin: 4px 0; }
+  .message.assistant code {
+    background: var(--rose-50); border: 1px solid var(--line);
+    border-radius: 4px; padding: 1px 6px; font-size: 13px;
+  }
+  .message.assistant pre {
+    background: #2d2a2e; color: #fcfcfa;
+    padding: 12px; border-radius: 8px; overflow-x: auto;
+    margin: 6px 0; font-size: 13px;
+  }
+  .message.assistant pre code { background: none; border: none; color: inherit; padding: 0; }
+  .message.assistant strong { color: var(--rose-600); }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+  .thinking { display: flex; align-items: center; gap: 10px; color: var(--ink-400); }
+  .thinking .dots { display: inline-flex; gap: 4px; }
+  .thinking .dots span {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--rose-400);
+    animation: bounce 1.3s ease-in-out infinite;
+  }
+  .thinking .dots span:nth-child(2) { animation-delay: 0.18s; }
+  .thinking .dots span:nth-child(3) { animation-delay: 0.36s; }
+  @keyframes bounce { 0%, 60%, 100% { transform: none; opacity: 0.6; } 30% { transform: translateY(-7px); opacity: 1; } }
 
-        .message.user {
-            background: linear-gradient(135deg, #ffa6c1 0%, #ff6b9d 100%);
-            color: white;
-            margin-left: auto;
-            border-bottom-right-radius: 5px;
-        }
+  .input-area { display: flex; gap: 10px; }
+  .message-input {
+    flex: 1;
+    padding: 13px 18px;
+    border: 1.5px solid var(--line);
+    border-radius: 12px;
+    font-size: 15px;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .message-input:focus { border-color: var(--rose-400); box-shadow: 0 0 0 3px rgba(240, 101, 149, 0.15); }
 
-        .message.assistant {
-            background: white;
-            border: 1px solid #ffd6e7;
-            border-bottom-left-radius: 5px;
-            color: #333;
-        }
+  .footer-note {
+    text-align: center;
+    font-size: 12px;
+    color: var(--ink-400);
+    padding: 0 32px 20px;
+  }
 
-        .message.thinking {
-            background: #ffe8f0;
-            border: 1px solid #ffc0d4;
-            border-bottom-left-radius: 5px;
-            color: #c2185b;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
+  .spinner {
+    display: inline-block; width: 15px; height: 15px;
+    border: 2px solid rgba(255,255,255,0.4); border-top-color: #fff;
+    border-radius: 50%; animation: spin 0.9s linear infinite;
+    vertical-align: -2px; margin-left: 6px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
 
-        .thinking-dots {
-            display: inline-flex;
-            gap: 4px;
-        }
-
-        .thinking-dots span {
-            width: 8px;
-            height: 8px;
-            background: #ff6b9d;
-            border-radius: 50%;
-            animation: thinking 1.4s ease-in-out infinite;
-        }
-
-        .thinking-dots span:nth-child(1) {
-            animation-delay: 0s;
-        }
-
-        .thinking-dots span:nth-child(2) {
-            animation-delay: 0.2s;
-        }
-
-        .thinking-dots span:nth-child(3) {
-            animation-delay: 0.4s;
-        }
-
-        @keyframes thinking {
-            0%, 60%, 100% {
-                transform: translateY(0);
-                opacity: 0.7;
-            }
-            30% {
-                transform: translateY(-10px);
-                opacity: 1;
-            }
-        }
-
-        .input-area {
-            display: flex;
-            gap: 10px;
-        }
-
-        .message-input {
-            flex: 1;
-            padding: 15px 20px;
-            border: 2px solid #ffe0ec;
-            border-radius: 25px;
-            font-size: 16px;
-            outline: none;
-            transition: border-color 0.3s;
-        }
-
-        .message-input:focus {
-            border-color: #ff6b9d;
-        }
-
-        .send-btn {
-            background: linear-gradient(135deg, #ffa6c1 0%, #ff6b9d 100%);
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            border-radius: 25px;
-            cursor: pointer;
-            font-size: 16px;
-            transition: transform 0.2s;
-        }
-
-        .send-btn:hover {
-            transform: scale(1.05);
-        }
-
-        .send-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .status {
-            padding: 10px 20px;
-            margin: 10px 30px;
-            border-radius: 8px;
-            text-align: center;
-            display: none;
-        }
-
-        .status.success {
-            background: #ffe8f0;
-            color: #c2185b;
-            border: 1px solid #ffc0d4;
-        }
-
-        .status.error {
-            background: #ffebee;
-            color: #c62828;
-            border: 1px solid #ef9a9a;
-        }
-
-        .status.info {
-            background: #fce4ec;
-            color: #880e4f;
-            border: 1px solid #f8bbd0;
-        }
-
-        .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid #ffe0ec;
-            border-top: 3px solid #ff6b9d;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-left: 10px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .chat-disabled {
-            opacity: 0.5;
-            pointer-events: none;
-        }
-
-        /* Scrollbar styling for pink theme */
-        .messages::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        .messages::-webkit-scrollbar-track {
-            background: #ffe8f0;
-            border-radius: 10px;
-        }
-
-        .messages::-webkit-scrollbar-thumb {
-            background: #ff6b9d;
-            border-radius: 10px;
-        }
-
-        .messages::-webkit-scrollbar-thumb:hover {
-            background: #ff4081;
-        }
-    </style>
+  @media (max-width: 560px) {
+    body { padding: 12px 8px; }
+    .header, .upload-section, .chat-section { padding-left: 18px; padding-right: 18px; }
+    .status { margin-left: 18px; margin-right: 18px; }
+    .message { max-width: 94%; }
+    .chat-section { height: 460px; }
+  }
+</style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>📚 PDF RAG Q&A System</h1>
-            <p>Upload a PDF document and ask AI questions about it</p>
-        </div>
+  <div class="container">
 
-        <div class="upload-section">
-            <div class="upload-area" id="uploadArea">
-                <div class="upload-icon">📄</div>
-                <h3>Click or drag PDF file here</h3>
-                <p style="color: #c2185b; margin-top: 10px;">PDF format supported</p>
-                <input type="file" id="fileInput" class="file-input" accept=".pdf">
-                <button class="upload-btn" id="uploadBtn" disabled>Upload & Vectorize</button>
-            </div>
-            <div class="file-info" id="fileInfo"></div>
-        </div>
-
-        <div class="status" id="status"></div>
-
-        <div class="chat-section chat-disabled" id="chatSection">
-            <div class="messages" id="messages">
-                <div class="message assistant">
-                    👋 Hello! Please upload a PDF file first, then you can start asking questions.
-                </div>
-            </div>
-            <div class="input-area">
-                <input 
-                    type="text" 
-                    class="message-input" 
-                    id="messageInput" 
-                    placeholder="Enter your question..."
-                    disabled
-                >
-                <button class="send-btn" id="sendBtn" disabled>Send</button>
-            </div>
-        </div>
+    <div class="header">
+      <h1>📄 PDF 智慧問答系統
+        <span class="sub">上傳一份 PDF，AI 立即為你解讀與問答</span>
+      </h1>
+      <div class="steps">
+        <div class="step active" id="step1"><span class="dot">1</span>上傳文件</div>
+        <div class="step" id="step2"><span class="dot">2</span>開始問答</div>
+      </div>
     </div>
 
-    <script>
-        // ⚠️ Replace with your n8n webhook URLs
-        const N8N_UPLOAD_URL = 'https://a3g.app.n8n.cloud/webhook/upload-pdf1';
-        const N8N_CHAT_URL = 'https://a3g.app.n8n.cloud/webhook/RAGchat1';
+    <div class="upload-section">
+      <div class="upload-area" id="uploadArea">
+        <div class="icon">📎</div>
+        <h3>點擊選擇 PDF，或將檔案拖曳到這裡</h3>
+        <p>僅支援 PDF 格式，檔案上限 10 MB<br>上傳新文件會自動取代先前的文件</p>
+        <input type="file" id="fileInput" class="file-input" accept=".pdf">
+      </div>
+      <div class="file-chip" id="fileChip">
+        <span>📄</span>
+        <span class="name" id="fileName"></span>
+        <span class="size" id="fileSize"></span>
+      </div>
+      <div class="actions">
+        <button class="btn primary" id="uploadBtn" disabled>上傳並建立知識庫</button>
+        <button class="btn ghost" id="changeBtn" style="display:none">更換文件</button>
+      </div>
+    </div>
 
-        const uploadArea = document.getElementById('uploadArea');
-        const fileInput = document.getElementById('fileInput');
-        const uploadBtn = document.getElementById('uploadBtn');
-        const fileInfo = document.getElementById('fileInfo');
-        const status = document.getElementById('status');
-        const chatSection = document.getElementById('chatSection');
-        const messages = document.getElementById('messages');
-        const messageInput = document.getElementById('messageInput');
-        const sendBtn = document.getElementById('sendBtn');
+    <div class="status" id="status"></div>
 
-        let selectedFile = null;
-        let isPdfUploaded = false;
-        let sessionId = generateSessionId();
-        let thinkingMessageElement = null;
+    <div class="chat-section disabled" id="chatSection">
+      <div class="chat-title">
+        💬 文件問答
+        <span class="doc-badge" id="docBadge"></span>
+      </div>
+      <div class="messages" id="messages">
+        <div class="message assistant">👋 你好！請先在上方上傳一份 PDF 文件，完成後就可以在這裡提問。</div>
+      </div>
+      <div class="input-area">
+        <input type="text" class="message-input" id="messageInput" placeholder="輸入你的問題…" disabled>
+        <button class="btn primary" id="sendBtn" disabled>送出</button>
+      </div>
+    </div>
 
-        function generateSessionId() {
-            return 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-        }
+    <div class="footer-note">AI 回答僅根據上傳文件內容產生，請自行判斷正確性。</div>
+  </div>
 
-        // Click upload area to select file (but not on button)
-        uploadArea.addEventListener('click', (e) => {
-            if (e.target !== uploadBtn && !uploadBtn.contains(e.target)) {
-                fileInput.click();
-            }
-        });
+<script>
+  // ═══ 設定 ═══════════════════════════════
+  const N8N_UPLOAD_URL = 'https://a3g.app.n8n.cloud/webhook/upload-pdf1';
+  const N8N_CHAT_URL   = 'https://a3g.app.n8n.cloud/webhook/RAGchat1';
+  const MAX_FILE_MB    = 10;
+  const RETRY_DELAY_MS = 12000; // n8n 偶爾短暫重啟，等它恢復後自動重試一次
 
-        // File selection
-        fileInput.addEventListener('change', (e) => {
-            handleFileSelect(e.target.files[0]);
-        });
+  // ═══ DOM ═══════════════════════════════
+  const $ = (id) => document.getElementById(id);
+  const uploadArea = $('uploadArea'), fileInput = $('fileInput'),
+        uploadBtn = $('uploadBtn'), changeBtn = $('changeBtn'),
+        fileChip = $('fileChip'), fileName = $('fileName'), fileSize = $('fileSize'),
+        status = $('status'), chatSection = $('chatSection'),
+        messages = $('messages'), messageInput = $('messageInput'),
+        sendBtn = $('sendBtn'), docBadge = $('docBadge'),
+        step1 = $('step1'), step2 = $('step2');
 
-        // Drag and drop events
-        uploadArea.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            uploadArea.classList.add('dragover');
-        });
+  let selectedFile = null;
+  let uploadedName = null;
+  let sessionId = newSessionId();
+  let thinkingEl = null;
+  let statusTimer = null;
 
-        uploadArea.addEventListener('dragleave', () => {
-            uploadArea.classList.remove('dragover');
-        });
+  function newSessionId() {
+    return 'session_' + Date.now() + '_' + Math.random().toString(36).slice(2, 10);
+  }
 
-        uploadArea.addEventListener('drop', (e) => {
-            e.preventDefault();
-            uploadArea.classList.remove('dragover');
-            handleFileSelect(e.dataTransfer.files[0]);
-        });
+  // ═══ 檔案選擇 ═══════════════════════════
+  uploadArea.addEventListener('click', () => fileInput.click());
+  fileInput.addEventListener('change', (e) => handleFile(e.target.files[0]));
+  uploadArea.addEventListener('dragover', (e) => { e.preventDefault(); uploadArea.classList.add('dragover'); });
+  uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('dragover'));
+  uploadArea.addEventListener('drop', (e) => {
+    e.preventDefault();
+    uploadArea.classList.remove('dragover');
+    handleFile(e.dataTransfer.files[0]);
+  });
+  changeBtn.addEventListener('click', () => fileInput.click());
 
-        function handleFileSelect(file) {
-            if (!file) return;
-            
-            if (file.type !== 'application/pdf') {
-                showStatus('Please select a PDF file!', 'error');
-                return;
-            }
+  function handleFile(file) {
+    if (!file) return;
+    // 用副檔名判斷（拖曳時 file.type 可能是空字串）
+    if (!/\.pdf$/i.test(file.name)) {
+      showStatus('只支援 PDF 檔案，請重新選擇。', 'error');
+      return;
+    }
+    if (file.size > MAX_FILE_MB * 1024 * 1024) {
+      showStatus(`檔案超過 ${MAX_FILE_MB} MB 上限（目前 ${(file.size / 1048576).toFixed(1)} MB），請壓縮後再試。`, 'error');
+      return;
+    }
+    selectedFile = file;
+    fileName.textContent = file.name;
+    fileSize.textContent = (file.size / 1048576).toFixed(2) + ' MB';
+    fileChip.style.display = 'flex';
+    uploadBtn.disabled = false;
+    if (uploadedName && file.name !== uploadedName) {
+      showStatus('已選擇新文件，按「上傳並建立知識庫」後將取代目前的文件。', 'info');
+    }
+    fileInput.value = '';
+  }
 
-            selectedFile = file;
-            fileInfo.innerHTML = `✅ Selected: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
-            fileInfo.style.display = 'block';
-            uploadBtn.disabled = false;
-        }
+  // ═══ 共用：帶重試的 fetch ═══════════════
+  async function fetchWithRetry(url, options, onRetry) {
+    try {
+      return await doFetch(url, options);
+    } catch (err) {
+      if (onRetry) onRetry();
+      await new Promise((r) => setTimeout(r, RETRY_DELAY_MS));
+      return doFetch(url, options);
+    }
+  }
 
-        // Upload PDF
-        uploadBtn.addEventListener('click', async (e) => {
-            e.stopPropagation();
-            
-            if (!selectedFile) return;
+  async function doFetch(url, options) {
+    const res = await fetch(url, options);
+    if (!res.ok) throw new Error('HTTP ' + res.status);       // 先檢查狀態，再解析
+    try { return await res.json(); }
+    catch { return {}; }                                       // 非 JSON 也視為成功
+  }
 
-            uploadBtn.disabled = true;
-            uploadBtn.innerHTML = 'Processing <span class="loading"></span>';
+  // ═══ 上傳 ═══════════════════════════════
+  uploadBtn.addEventListener('click', async () => {
+    if (!selectedFile) return;
+    uploadBtn.disabled = true;
+    changeBtn.disabled = true;
+    uploadBtn.innerHTML = '處理中（清空舊資料 → 向量化）<span class="spinner"></span>';
 
-            const formData = new FormData();
-            formData.append('file', selectedFile);
+    const form = new FormData();
+    form.append('file', selectedFile);
 
-            try {
-                const response = await fetch(N8N_UPLOAD_URL, {
-                    method: 'POST',
-                    body: formData
-                });
+    try {
+      await fetchWithRetry(
+        N8N_UPLOAD_URL,
+        { method: 'POST', body: form },
+        () => showStatus('伺服器忙碌中，12 秒後自動重試…', 'info')
+      );
+      uploadedName = selectedFile.name;
+      showStatus('✅ 文件已上傳並完成向量化，可以開始提問了！', 'success');
+      enterChatMode();
+    } catch (err) {
+      showStatus('❌ 上傳失敗（' + err.message + '）。伺服器可能正在重啟，請稍候一分鐘再試。', 'error');
+      uploadBtn.disabled = false;
+    } finally {
+      changeBtn.disabled = false;
+      uploadBtn.innerHTML = '上傳並建立知識庫';
+    }
+  });
 
-                const result = await response.json();
+  function enterChatMode() {
+    chatSection.classList.remove('disabled');
+    messageInput.disabled = false;
+    sendBtn.disabled = false;
+    changeBtn.style.display = 'inline-block';
+    step1.classList.remove('active');
+    step2.classList.add('active');
+    docBadge.textContent = '📄 ' + uploadedName;
+    docBadge.style.display = 'inline-block';
+    // 新文件 = 新對話：清空舊訊息並換 sessionId，避免舊對話記憶干擾
+    sessionId = newSessionId();
+    messages.innerHTML = '';
+    addSystemMessage('已載入「' + uploadedName + '」，歡迎提問！');
+    messageInput.focus();
+  }
 
-                if (response.ok) {
-                    showStatus('✅ PDF successfully uploaded and vectorized! You can now start asking questions.', 'success');
-                    isPdfUploaded = true;
-                    enableChat();
-                } else {
-                    throw new Error(result.message || 'Upload failed');
-                }
-            } catch (error) {
-                showStatus('❌ Upload failed: ' + error.message, 'error');
-                uploadBtn.disabled = false;
-            } finally {
-                uploadBtn.innerHTML = 'Upload & Vectorize';
-            }
-        });
+  // ═══ 問答 ═══════════════════════════════
+  async function sendMessage() {
+    const question = messageInput.value.trim();
+    if (!question || !uploadedName) return;
 
-        function enableChat() {
-            chatSection.classList.remove('chat-disabled');
-            messageInput.disabled = false;
-            sendBtn.disabled = false;
-            messageInput.focus();
-        }
+    addMessage(question, 'user');
+    messageInput.value = '';
+    setChatBusy(true);
+    showThinking();
 
-        function addThinkingMessage() {
-            thinkingMessageElement = document.createElement('div');
-            thinkingMessageElement.className = 'message thinking';
-            thinkingMessageElement.innerHTML = `
-                <span>Thinking</span>
-                <div class="thinking-dots">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                </div>
-            `;
-            messages.appendChild(thinkingMessageElement);
-            messages.scrollTop = messages.scrollHeight;
-        }
+    try {
+      const result = await fetchWithRetry(
+        N8N_CHAT_URL,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ chatInput: question, sessionId })
+        },
+        () => { if (thinkingEl) thinkingEl.querySelector('.label').textContent = '伺服器忙碌中，等待重試…'; }
+      );
+      hideThinking();
+      const answer = result.output || result.answer || result.response;
+      if (answer && String(answer).trim()) {
+        addAssistantMessage(String(answer));
+      } else {
+        addMessage('（沒有取得回答，請換個方式再問一次。）', 'error-msg');
+      }
+    } catch (err) {
+      hideThinking();
+      addMessage('❌ 查詢失敗（' + err.message + '）。伺服器可能正在重啟，請稍候一分鐘再試。', 'error-msg');
+    } finally {
+      setChatBusy(false);
+      messageInput.focus();
+    }
+  }
 
-        function removeThinkingMessage() {
-            if (thinkingMessageElement) {
-                thinkingMessageElement.remove();
-                thinkingMessageElement = null;
-            }
-        }
+  sendBtn.addEventListener('click', sendMessage);
+  messageInput.addEventListener('keydown', (e) => {
+    // isComposing：中文輸入法選字按 Enter 時不誤送
+    if (e.key === 'Enter' && !e.isComposing) sendMessage();
+  });
 
-        // Send message
-        async function sendMessage() {
-            const question = messageInput.value.trim();
-            if (!question || !isPdfUploaded) return;
+  function setChatBusy(busy) {
+    sendBtn.disabled = busy;
+    messageInput.disabled = busy;
+  }
 
-            addMessage(question, 'user');
-            messageInput.value = '';
-            sendBtn.disabled = true;
-            messageInput.disabled = true;
+  function showThinking() {
+    thinkingEl = document.createElement('div');
+    thinkingEl.className = 'message assistant thinking';
+    thinkingEl.innerHTML = '<span class="label">思考中</span><span class="dots"><span></span><span></span><span></span></span>';
+    messages.appendChild(thinkingEl);
+    scrollBottom();
+  }
+  function hideThinking() {
+    if (thinkingEl) { thinkingEl.remove(); thinkingEl = null; }
+  }
 
-            // Add thinking animation
-            addThinkingMessage();
+  function addMessage(text, type) {
+    const div = document.createElement('div');
+    div.className = 'message ' + type;
+    div.textContent = text;
+    messages.appendChild(div);
+    scrollBottom();
+  }
+  function addSystemMessage(text) { addMessage(text, 'system'); }
 
-            try {
-                const response = await fetch(N8N_CHAT_URL, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ 
-                        chatInput: question,
-                        sessionId: sessionId
-                    })
-                });
+  function addAssistantMessage(markdown) {
+    const div = document.createElement('div');
+    div.className = 'message assistant';
+    div.innerHTML = renderMarkdown(markdown);
+    messages.appendChild(div);
+    scrollBottom();
+  }
 
-                const result = await response.json();
+  function scrollBottom() { messages.scrollTop = messages.scrollHeight; }
 
-                // Remove thinking animation
-                removeThinkingMessage();
+  // ═══ 輕量 Markdown 渲染（先跳脫 HTML 再轉換）═══
+  function escapeHtml(s) {
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+  function renderMarkdown(src) {
+    let text = escapeHtml(src);
 
-                if (response.ok) {
-                    const answer = result.output || result.response || 'Sorry, no response received.';
-                    addMessage(answer, 'assistant');
-                } else {
-                    throw new Error('Query failed');
-                }
-            } catch (error) {
-                removeThinkingMessage();
-                addMessage('❌ Error occurred: ' + error.message, 'assistant');
-            } finally {
-                sendBtn.disabled = false;
-                messageInput.disabled = false;
-                messageInput.focus();
-            }
-        }
+    // 程式碼區塊 ```...```
+    const codeBlocks = [];
+    text = text.replace(/```([\s\S]*?)```/g, (m, code) => {
+      codeBlocks.push('<pre><code>' + code.trim() + '</code></pre>');
+      return ' B' + (codeBlocks.length - 1) + ' ';
+    });
 
-        sendBtn.addEventListener('click', sendMessage);
-        messageInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') sendMessage();
-        });
+    text = text
+      .replace(/`([^`\n]+)`/g, '<code>$1</code>')
+      .replace(/^#{3,4}\s*(.+)$/gm, '<h3>$1</h3>')
+      .replace(/^#{1,2}\s*(.+)$/gm, '<h3>$1</h3>')
+      .replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>')
+      .replace(/(^|[^*])\*([^*\n]+)\*(?!\*)/g, '$1<em>$2</em>')
+      .replace(/^\s*[-•]\s+(.+)$/gm, '<li>$1</li>')
+      .replace(/^\s*\d+[.、]\s+(.+)$/gm, '<li class="num">$1</li>');
 
-        function addMessage(text, type) {
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${type}`;
-            messageDiv.textContent = text;
-            messages.appendChild(messageDiv);
-            messages.scrollTop = messages.scrollHeight;
-        }
+    // 連續 li 包成 ul
+    text = text.replace(/(<li[\s\S]*?<\/li>\n?)+/g, (m) => '<ul>' + m.replace(/\n/g, '') + '</ul>');
 
-        function showStatus(message, type) {
-            status.textContent = message;
-            status.className = `status ${type}`;
-            status.style.display = 'block';
-            setTimeout(() => {
-                status.style.display = 'none';
-            }, 5000);
-        }
-    </script>
+    // 段落與換行
+    text = text
+      .split(/\n{2,}/)
+      .map((blk) => (/^<(h3|ul|pre)/.test(blk.trim()) ? blk : '<p>' + blk.replace(/\n/g, '<br>') + '</p>'))
+      .join('');
+
+    // 還原程式碼區塊
+    text = text.replace(/ B(\d+) /g, (m, i) => codeBlocks[+i]);
+    return text;
+  }
+
+  // ═══ 狀態列 ═════════════════════════════
+  function showStatus(msg, type) {
+    clearTimeout(statusTimer);
+    status.textContent = msg;
+    status.className = 'status ' + type;
+    if (type !== 'error') {
+      statusTimer = setTimeout(() => { status.className = 'status'; }, 6000);
+    }
+  }
+</script>
 </body>
 </html>
