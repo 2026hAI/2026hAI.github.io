@@ -1,0 +1,624 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="見境 JING：為台灣語境打造的 AI 智慧眼鏡。看見就能問，開口就能做。">
+  <title>見境 JING｜看見就能問，開口就能做</title>
+  <style>
+    :root {
+      --ink: #0b2923;
+      --ink-2: #123a31;
+      --ink-3: #1f4e41;
+      --paper: #f7f5ef;
+      --paper-2: #efeee7;
+      --white: #fffdf8;
+      --text: #15231f;
+      --muted: #61706a;
+      --line: #ccd5ce;
+      --amber: #e9a84f;
+      --amber-dark: #b87225;
+      --sage: #dce6df;
+      --max: 1160px;
+      --radius: 20px;
+      --shadow: 0 16px 44px rgba(11, 41, 35, .11);
+      --ease: cubic-bezier(.22, .61, .36, 1);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--text);
+      background: var(--paper);
+      font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif;
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+    body::selection { background: var(--amber); color: var(--ink); }
+    a { color: inherit; text-decoration: none; }
+    button, input { font: inherit; }
+    button, a { -webkit-tap-highlight-color: transparent; }
+    :focus-visible { outline: 3px solid rgba(233, 168, 79, .75); outline-offset: 4px; }
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+
+    .container { width: min(var(--max), calc(100% - 48px)); margin: 0 auto; }
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--amber-dark);
+      font-size: .78rem;
+      font-weight: 800;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+    }
+    .eyebrow::before { content: ""; width: 24px; height: 2px; background: currentColor; }
+    .section-head { max-width: 680px; margin-bottom: 48px; }
+    .section-head h2 { margin: 14px 0 12px; font-size: clamp(2rem, 4vw, 3.2rem); line-height: 1.2; letter-spacing: -.04em; }
+    .section-head p { margin: 0; color: var(--muted); font-size: 1.02rem; }
+
+    .site-header {
+      position: absolute;
+      z-index: 10;
+      top: 0;
+      left: 0;
+      width: 100%;
+      color: var(--white);
+    }
+    .nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 82px;
+    }
+    .brand { display: inline-flex; align-items: baseline; gap: 10px; font-size: 1.12rem; font-weight: 800; letter-spacing: .08em; }
+    .brand small { color: rgba(255,255,255,.58); font-size: .65rem; font-weight: 500; letter-spacing: .18em; }
+    .nav-links { display: flex; gap: 34px; color: rgba(255,255,255,.76); font-size: .86rem; }
+    .nav-links a { transition: color .25s ease; }
+    .nav-links a:hover { color: var(--white); }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      min-height: 50px;
+      padding: 0 22px;
+      border: 1px solid transparent;
+      border-radius: 999px;
+      cursor: pointer;
+      font-size: .92rem;
+      font-weight: 800;
+      letter-spacing: .02em;
+      transition: transform .25s var(--ease), background .25s ease, border-color .25s ease, color .25s ease;
+    }
+    .button:hover { transform: translateY(-2px); }
+    .button-primary { background: var(--amber); color: var(--ink); box-shadow: 0 10px 24px rgba(233, 168, 79, .18); }
+    .button-primary:hover { background: #f2bb6b; }
+    .button-ghost { border-color: rgba(255,255,255,.38); color: var(--white); background: transparent; }
+    .button-ghost:hover { border-color: var(--amber); color: var(--amber); }
+    .button-dark { background: var(--ink); color: var(--white); }
+    .button-dark:hover { background: var(--ink-2); }
+    .button-link { min-height: auto; padding: 0; border: 0; border-radius: 0; color: var(--amber-dark); background: transparent; }
+    .button-link:hover { color: var(--ink); transform: none; }
+
+    .hero {
+      position: relative;
+      overflow: hidden;
+      min-height: 760px;
+      display: flex;
+      align-items: center;
+      color: var(--white);
+      background:
+        radial-gradient(circle at 72% 36%, rgba(56, 118, 94, .24), transparent 29%),
+        linear-gradient(118deg, var(--ink) 0%, #0d3129 55%, #174438 100%);
+    }
+    .hero::before, .hero::after { content: ""; position: absolute; pointer-events: none; }
+    .hero::before {
+      width: 760px; height: 760px; right: -160px; top: 60px; border: 1px solid rgba(233,168,79,.16); border-radius: 50%;
+      box-shadow: 0 0 0 42px rgba(233,168,79,.03), 0 0 0 98px rgba(233,168,79,.02);
+    }
+    .hero::after {
+      inset: 0;
+      opacity: .18;
+      background-image: radial-gradient(rgba(255,255,255,.24) .6px, transparent .6px);
+      background-size: 22px 22px;
+      mask-image: linear-gradient(90deg, transparent, #000 30%, #000 75%, transparent);
+    }
+    .hero-grid { position: relative; z-index: 1; display: grid; grid-template-columns: minmax(0, .92fr) minmax(360px, 1.08fr); gap: 56px; align-items: center; padding: 132px 0 92px; }
+    .hero-copy { max-width: 610px; }
+    .hero h1 { max-width: 620px; margin: 20px 0 22px; font-size: clamp(3.15rem, 7.2vw, 6.1rem); line-height: 1.06; letter-spacing: -.075em; font-weight: 850; }
+    .hero-lead { max-width: 540px; color: rgba(255,255,255,.75); font-size: clamp(1rem, 1.6vw, 1.17rem); line-height: 1.9; }
+    .hero-lead strong { display: block; margin-bottom: 6px; color: var(--amber); font-size: 1.18rem; }
+    .hero-actions { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 34px; }
+    .hero-note { margin: 26px 0 0; color: rgba(255,255,255,.48); font-size: .79rem; letter-spacing: .04em; }
+
+    .glasses-stage { position: relative; min-height: 450px; display: grid; place-items: center; }
+    .glasses-stage::before { content: ""; position: absolute; width: 400px; height: 400px; border: 1px solid rgba(255,255,255,.16); border-radius: 50%; transform: rotate(-22deg); }
+    .glasses-stage::after { content: ""; position: absolute; width: 560px; height: 180px; border-top: 1px solid rgba(233,168,79,.33); border-radius: 50%; transform: rotate(-21deg); }
+    .glasses {
+      position: relative;
+      z-index: 2;
+      width: min(560px, 100%);
+      height: 260px;
+      transform: rotate(-7deg);
+      filter: drop-shadow(0 26px 24px rgba(0,0,0,.28));
+    }
+    .lens {
+      position: absolute;
+      top: 42px;
+      width: 216px;
+      height: 168px;
+      border: 9px solid #101f1c;
+      border-radius: 46% 46% 43% 43% / 40% 40% 54% 54%;
+      background: linear-gradient(135deg, rgba(161, 211, 192, .18), rgba(10,40,33,.2));
+      box-shadow: inset 0 0 0 2px rgba(255,255,255,.16), inset 0 -24px 36px rgba(4,24,19,.22);
+    }
+    .lens::after { content: ""; position: absolute; inset: 13px 20px auto; height: 1px; background: rgba(255,255,255,.3); transform: rotate(-13deg); }
+    .lens-left { left: 34px; }
+    .lens-right { right: 34px; }
+    .bridge { position: absolute; z-index: 3; left: 50%; top: 76px; width: 78px; height: 37px; border-top: 12px solid #101f1c; border-radius: 50% 50% 0 0; transform: translateX(-50%); }
+    .temple { position: absolute; z-index: 1; top: 81px; width: 200px; height: 35px; background: #101f1c; border-radius: 50px; }
+    .temple-left { left: -22px; transform: rotate(18deg); }
+    .temple-right { right: -22px; transform: rotate(-18deg); }
+    .temple::after { content: "JING"; position: absolute; top: 8px; color: var(--amber); font: 800 .62rem/1 system-ui, sans-serif; letter-spacing: .14em; }
+    .temple-left::after { right: 22px; }
+    .temple-right::after { left: 22px; }
+    .hinge { position: absolute; z-index: 4; top: 75px; width: 20px; height: 31px; border-radius: 6px; background: var(--amber); box-shadow: 0 0 0 5px rgba(233,168,79,.08); }
+    .hinge-left { left: 29px; }
+    .hinge-right { right: 29px; }
+    .hero-caption { position: absolute; z-index: 3; bottom: 0; right: 5%; max-width: 230px; color: rgba(255,255,255,.48); font-size: .76rem; text-align: right; }
+
+    .section { padding: 116px 0; }
+    .section-white { background: var(--white); }
+    .section-sage { background: var(--paper-2); }
+    .value-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+    .value-card { min-height: 280px; padding: 28px; border: 1px solid var(--line); border-radius: var(--radius); background: rgba(255,255,255,.56); transition: transform .3s var(--ease), border-color .3s ease, box-shadow .3s ease; }
+    .value-card:hover { transform: translateY(-6px); border-color: rgba(31,78,65,.5); box-shadow: var(--shadow); }
+    .icon-box { display: grid; place-items: center; width: 48px; height: 48px; margin-bottom: 56px; border: 1px solid rgba(31,78,65,.24); border-radius: 14px; color: var(--ink-3); }
+    .icon-box svg { width: 23px; height: 23px; }
+    .value-card h3 { margin: 0 0 10px; font-size: 1.18rem; letter-spacing: -.03em; }
+    .value-card p { margin: 0; color: var(--muted); font-size: .91rem; line-height: 1.8; }
+
+    .scenario-layout { display: grid; grid-template-columns: .82fr 1.18fr; gap: 82px; align-items: start; }
+    .scenario-intro { position: sticky; top: 36px; }
+    .scenario-intro h2 { max-width: 390px; margin: 14px 0 20px; font-size: clamp(2.15rem, 4.2vw, 3.8rem); line-height: 1.18; letter-spacing: -.06em; }
+    .scenario-intro p { max-width: 400px; margin: 0; color: var(--muted); }
+    .scenario-list { border-top: 1px solid var(--line); }
+    .scenario-item { display: grid; grid-template-columns: 54px 1fr; gap: 24px; padding: 30px 0; border-bottom: 1px solid var(--line); }
+    .scenario-number { color: var(--amber-dark); font-size: .88rem; font-weight: 800; letter-spacing: .1em; }
+    .scenario-item h3 { margin: 0 0 8px; font-size: 1.2rem; letter-spacing: -.02em; }
+    .scenario-item p { margin: 0; color: var(--muted); font-size: .94rem; }
+    .scenario-item small { display: block; margin-top: 13px; color: #78827d; font-size: .78rem; line-height: 1.7; }
+
+    .trust { position: relative; overflow: hidden; color: var(--white); background: var(--ink); }
+    .trust::after { content: ""; position: absolute; width: 580px; height: 580px; right: -220px; top: -180px; border: 1px solid rgba(233,168,79,.22); border-radius: 50%; box-shadow: 0 0 0 60px rgba(233,168,79,.03), 0 0 0 122px rgba(233,168,79,.02); }
+    .trust-grid { position: relative; z-index: 1; display: grid; grid-template-columns: .9fr 1.1fr; gap: 84px; align-items: start; }
+    .trust .eyebrow { color: var(--amber); }
+    .trust h2 { max-width: 470px; margin: 16px 0 20px; font-size: clamp(2.2rem, 4.3vw, 4rem); line-height: 1.16; letter-spacing: -.06em; }
+    .trust-intro > p { max-width: 460px; color: rgba(255,255,255,.63); }
+    .trust-link { display: inline-flex; align-items: center; gap: 8px; margin-top: 18px; color: var(--amber); font-weight: 800; }
+    .trust-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0 26px; border-top: 1px solid rgba(255,255,255,.2); }
+    .trust-item { padding: 28px 0 24px; border-bottom: 1px solid rgba(255,255,255,.2); }
+    .trust-item svg { width: 25px; height: 25px; margin-bottom: 16px; color: var(--amber); }
+    .trust-item h3 { margin: 0 0 8px; font-size: 1.03rem; }
+    .trust-item p { margin: 0; color: rgba(255,255,255,.58); font-size: .86rem; line-height: 1.75; }
+
+    .service-band { display: grid; grid-template-columns: 1.2fr .8fr; gap: 52px; align-items: center; padding: 54px; border: 1px solid var(--line); border-radius: 28px; background: var(--white); }
+    .service-band h2 { margin: 0 0 14px; font-size: clamp(1.9rem, 3.2vw, 2.8rem); line-height: 1.2; letter-spacing: -.05em; }
+    .service-band p { margin: 0; color: var(--muted); }
+    .service-side { padding-left: 32px; border-left: 1px solid var(--line); }
+    .price-label { margin: 0 0 4px; color: var(--amber-dark); font-size: .82rem; font-weight: 800; }
+    .price { margin: 0; color: var(--ink); font-size: clamp(1.6rem, 3vw, 2.4rem); font-weight: 850; letter-spacing: -.04em; }
+    .fine-print { margin-top: 12px !important; font-size: .75rem; line-height: 1.65; }
+
+    .cta-wrap { padding-top: 0; }
+    .cta-card { position: relative; overflow: hidden; display: grid; grid-template-columns: 1fr 1fr; gap: 54px; padding: 56px; border-radius: 28px; color: var(--white); background: linear-gradient(110deg, var(--ink) 0%, var(--ink-2) 100%); box-shadow: var(--shadow); }
+    .cta-card::after { content: ""; position: absolute; width: 390px; height: 390px; right: -140px; top: -160px; border: 1px solid rgba(233,168,79,.24); border-radius: 50%; }
+    .cta-card > * { position: relative; z-index: 1; }
+    .cta-card h2 { margin: 0 0 16px; font-size: clamp(2rem, 4vw, 3.2rem); line-height: 1.18; letter-spacing: -.06em; }
+    .cta-card p { margin: 0; color: rgba(255,255,255,.68); font-size: .95rem; }
+    .signup-form { align-self: center; }
+    .form-row { display: flex; gap: 10px; }
+    .form-row input { min-width: 0; flex: 1; height: 52px; padding: 0 17px; border: 1px solid rgba(255,255,255,.22); border-radius: 11px; color: var(--white); background: rgba(255,255,255,.12); }
+    .form-row input::placeholder { color: rgba(255,255,255,.56); }
+    .form-row .button { flex: 0 0 auto; border-radius: 11px; }
+    .consent { display: flex; align-items: flex-start; gap: 9px; margin-top: 16px; color: rgba(255,255,255,.5); font-size: .75rem; line-height: 1.55; }
+    .consent input { margin-top: 4px; accent-color: var(--amber); }
+    .consent a { color: var(--amber); text-decoration: underline; text-underline-offset: 2px; }
+    .consent--optional { color: rgba(255,255,255,.62); }
+    .form-helper { margin-top: 10px !important; color: rgba(255,255,255,.56) !important; font-size: .76rem !important; }
+    .form-message { min-height: 24px; margin-top: 12px !important; color: var(--amber) !important; font-size: .8rem !important; }
+    .form-message.is-error { color: #ffd0bc !important; }
+    .form-notice { margin-top: 16px; border: 1px solid rgba(255,255,255,.18); border-radius: 12px; background: rgba(255,255,255,.06); }
+    .form-notice summary { padding: 12px 14px; color: rgba(255,255,255,.82); font-size: .78rem; }
+    .form-notice summary::after { color: var(--amber); font-size: 1.1rem; }
+    .form-notice p { margin: 0; padding: 0 14px 14px; color: rgba(255,255,255,.62); font-size: .76rem; line-height: 1.7; }
+
+    .enterprise-wrap { padding-top: 0; }
+    .enterprise-card { display: grid; grid-template-columns: .82fr 1.18fr; gap: 54px; padding: 54px; border: 1px solid var(--line); border-radius: 28px; background: var(--paper-2); }
+    .enterprise-card h2 { margin: 14px 0 16px; font-size: clamp(2rem, 4vw, 3.2rem); line-height: 1.18; letter-spacing: -.06em; }
+    .enterprise-card p { color: var(--muted); }
+    .enterprise-intro ul { margin: 24px 0 0; padding-left: 20px; color: var(--muted); font-size: .9rem; }
+    .enterprise-intro li + li { margin-top: 8px; }
+    .enterprise-form { align-self: start; }
+    .enterprise-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+    .field { display: grid; gap: 6px; }
+    .field--full { grid-column: 1 / -1; }
+    .field label { color: var(--ink); font-size: .78rem; font-weight: 800; }
+    .field input, .field select, .field textarea { width: 100%; border: 1px solid var(--line); border-radius: 11px; color: var(--text); background: var(--white); }
+    .field input, .field select { height: 48px; padding: 0 13px; }
+    .field textarea { min-height: 92px; padding: 11px 13px; resize: vertical; }
+    .enterprise-form .form-notice { border-color: var(--line); background: rgba(255,255,255,.52); }
+    .enterprise-form .form-notice summary { color: var(--ink); }
+    .enterprise-form .form-notice summary::after { color: var(--amber-dark); }
+    .enterprise-form .form-notice p { color: var(--muted); }
+    .enterprise-form .consent { color: var(--muted); }
+    .enterprise-form .consent--optional { color: var(--muted); }
+    .enterprise-form .button { margin-top: 18px; }
+    .enterprise-form .form-message { color: var(--amber-dark) !important; }
+    .enterprise-form .form-message.is-error { color: #a4492a !important; }
+
+    .faq-grid { display: grid; grid-template-columns: .72fr 1.28fr; gap: 80px; }
+    .faq-grid h2 { margin: 14px 0 16px; font-size: clamp(2.2rem, 4.3vw, 3.7rem); line-height: 1.15; letter-spacing: -.06em; }
+    .faq-grid > div > p { max-width: 360px; color: var(--muted); }
+    .faq-list { border-top: 1px solid var(--line); }
+    details { border-bottom: 1px solid var(--line); }
+    summary { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 23px 0; cursor: pointer; list-style: none; font-size: 1.03rem; font-weight: 800; }
+    summary::-webkit-details-marker { display: none; }
+    summary::after { content: "+"; color: var(--amber-dark); font-size: 1.5rem; font-weight: 400; transition: transform .25s ease; }
+    details[open] summary::after { transform: rotate(45deg); }
+    details p { max-width: 720px; margin: -4px 42px 24px 0; color: var(--muted); font-size: .9rem; }
+
+    .footer { padding: 54px 0 34px; color: rgba(255,255,255,.58); background: var(--ink); }
+    .footer-grid { display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 52px; padding-bottom: 46px; border-bottom: 1px solid rgba(255,255,255,.16); }
+    .footer .brand { color: var(--white); }
+    .footer-intro p { max-width: 250px; margin: 14px 0 0; font-size: .84rem; }
+    .footer-nav { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px 24px; align-content: start; font-size: .82rem; }
+    .footer-nav a:hover { color: var(--amber); }
+    .footer-meta { display: flex; justify-content: space-between; gap: 20px; padding-top: 22px; font-size: .75rem; }
+    .footer-meta p { margin: 0; }
+
+    @media (max-width: 900px) {
+      .nav-links { display: none; }
+      .hero-grid, .scenario-layout, .trust-grid, .faq-grid { grid-template-columns: 1fr; gap: 52px; }
+      .hero { min-height: auto; }
+      .hero-grid { padding-top: 140px; }
+      .hero-copy { max-width: 720px; }
+      .glasses-stage { min-height: 330px; }
+      .scenario-intro { position: static; }
+      .service-band, .cta-card, .enterprise-card { grid-template-columns: 1fr; gap: 28px; }
+      .service-side { padding-left: 0; padding-top: 26px; border-top: 1px solid var(--line); border-left: 0; }
+      .cta-card { padding: 42px; }
+      .footer-grid { grid-template-columns: 1fr 1fr; }
+      .footer-intro { grid-column: 1 / -1; }
+    }
+    @media (max-width: 640px) {
+      .container { width: min(var(--max), calc(100% - 32px)); }
+      .nav { min-height: 70px; }
+      .nav .button { min-height: 42px; padding: 0 15px; font-size: .78rem; }
+      .brand { font-size: 1rem; }
+      .brand small { display: none; }
+      .hero-grid { padding: 116px 0 62px; gap: 24px; }
+      .hero h1 { font-size: clamp(3rem, 15vw, 4.5rem); }
+      .hero-lead strong { font-size: 1.04rem; }
+      .hero-actions .button { width: 100%; }
+      .hero-note { font-size: .7rem; line-height: 1.7; }
+      .glasses-stage { min-height: 248px; transform: scale(.78); margin: -10px -28px -18px; }
+      .section { padding: 78px 0; }
+      .section-head { margin-bottom: 30px; }
+      .value-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+      .value-card { min-height: 248px; padding: 20px; }
+      .icon-box { margin-bottom: 36px; }
+      .value-card h3 { font-size: 1rem; }
+      .value-card p { font-size: .82rem; line-height: 1.7; }
+      .scenario-item { grid-template-columns: 34px 1fr; gap: 14px; padding: 24px 0; }
+      .trust-list { grid-template-columns: 1fr 1fr; gap: 0 18px; }
+      .trust-item p { font-size: .78rem; }
+      .service-band, .cta-card { padding: 30px 24px; border-radius: 22px; }
+      .enterprise-card { padding: 30px 24px; border-radius: 22px; }
+      .enterprise-fields { grid-template-columns: 1fr; }
+      .field--full { grid-column: auto; }
+      .enterprise-form .button { width: 100%; }
+      .form-row { flex-direction: column; }
+      .form-row .button { width: 100%; }
+      .faq-grid { gap: 28px; }
+      summary { font-size: .94rem; }
+      details p { font-size: .84rem; }
+      .footer-grid { grid-template-columns: 1fr; gap: 32px; }
+      .footer-intro { grid-column: auto; }
+      .footer-meta { flex-direction: column; gap: 6px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container nav">
+      <a class="brand" href="#top" aria-label="見境 JING 首頁">見境 <span>JING</span><small>SMART GLASSES</small></a>
+      <nav class="nav-links" aria-label="主要導覽">
+        <a href="#values">核心賣點</a>
+        <a href="#scenarios">日常情境</a>
+        <a href="#trust">隱私與信任</a>
+        <a href="#faq">常見問題</a>
+      </nav>
+      <a class="button button-primary" href="#signup">取得試戴通知</a>
+    </div>
+  </header>
+
+  <main id="top">
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="container hero-grid">
+        <div class="hero-copy">
+          <h1 id="hero-title">看見就能問，<br>開口就能做。</h1>
+          <p class="hero-lead"><strong>見境 JING，為台灣語境打造的 AI 智慧眼鏡。</strong>透過語音、相機與開放式音訊，在不必拿出手機的時刻，協助你理解眼前資訊、處理日常小事，並留下重要片段。</p>
+          <div class="hero-actions">
+            <a class="button button-primary" href="#signup">取得試戴通知 <span aria-hidden="true">↗</span></a>
+            <a class="button button-ghost" href="#values">看看它能怎麼幫你 <span aria-hidden="true">↓</span></a>
+          </div>
+          <p class="hero-note">首發以 AI＋相機＋開放式音訊為核心，不以高複雜度的視野內顯示作為承諾。</p>
+        </div>
+        <div class="glasses-stage" aria-label="見境 JING 眼鏡概念示意圖">
+          <div class="glasses" aria-hidden="true">
+            <div class="temple temple-left"></div>
+            <div class="temple temple-right"></div>
+            <div class="lens lens-left"></div>
+            <div class="lens lens-right"></div>
+            <div class="bridge"></div>
+            <div class="hinge hinge-left"></div>
+            <div class="hinge hinge-right"></div>
+          </div>
+          <p class="hero-caption">不必拿出手機的時刻，先從一個真正有用的小任務開始。</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section-white" id="values" aria-labelledby="values-title">
+      <div class="container">
+        <div class="section-head">
+          <span class="eyebrow">核心賣點</span>
+          <h2 id="values-title">把 AI 融入每一天，<br>從一個小任務開始。</h2>
+          <p>不是為了新奇而戴，而是在你正走路、通勤、旅行或手上正忙的時候，少一步掏手機。</p>
+        </div>
+        <div class="value-grid">
+          <article class="value-card">
+            <div class="icon-box" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M2.5 12s3.6-6 9.5-6 9.5 6 9.5 6-3.6 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.8"/></svg></div>
+            <h3>懂繁中，也懂台灣日常</h3>
+            <p>從地址、店名、菜單到中英混用，以繁體中文與台灣常見語境為優先設計。</p>
+          </article>
+          <article class="value-card">
+            <div class="icon-box" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M5 5.5h14a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-7l-4.5 3v-3H5a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2Z"/><path d="M7.5 10.5h.01M12 10.5h.01M16.5 10.5h.01" stroke-linecap="round" stroke-width="3"/></svg></div>
+            <h3>不用拿手機，也能完成下一步</h3>
+            <p>詢問天氣、設定提醒、取得導航摘要、播放音樂，或追問剛剛的答案。</p>
+          </article>
+          <article class="value-card">
+            <div class="icon-box" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="8" r="3.3"/><path d="M5 20c.6-3.2 3-5 7-5s6.4 1.8 7 5"/></svg></div>
+            <h3>看見、翻譯、記錄</h3>
+            <p>拍下招牌或菜單取得簡短翻譯；看到值得留下的畫面，用語音或按鍵拍照、錄製短片。</p>
+          </article>
+          <article class="value-card">
+            <div class="icon-box" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 3.5 20 6v5.8c0 4.2-2.8 7.4-8 9.2-5.2-1.8-8-5-8-9.2V6l8-2.5Z"/><rect x="9.4" y="10.4" width="5.2" height="4.4" rx=".8"/><path d="M10.5 10.4V9a1.5 1.5 0 0 1 3 0v1.4"/></svg></div>
+            <h3>讓隱私成為看得見的選擇</h3>
+            <p>清楚提示拍攝狀態，錄音與相機分開授權；資料可管理、刪除，也說清楚何時需要連線。</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section-sage" id="scenarios" aria-labelledby="scenarios-title">
+      <div class="container scenario-layout">
+        <div class="scenario-intro">
+          <span class="eyebrow">日常情境</span>
+          <h2 id="scenarios-title">為台灣情境而生，陪你完成下一步。</h2>
+          <p>價值不在規格表，而在每一次真的少拿出手機、少中斷手邊正在做的事。</p>
+        </div>
+        <div class="scenario-list">
+          <article class="scenario-item">
+            <span class="scenario-number">01</span>
+            <div><h3>旅行中：少一次掏手機，多一點專心看風景</h3><p>看到看不懂的招牌或菜單，說一聲「幫我翻譯」，取得簡短的文字或語音結果；地點、店家或交通問題，也能直接詢問。</p><small>翻譯結果會受影像品質、網路與語境影響；重要資訊請以店家、官方或人工確認為準。</small></div>
+          </article>
+          <article class="scenario-item">
+            <span class="scenario-number">02</span>
+            <div><h3>通勤與日常：把小事交給語音處理</h3><p>「提醒我晚上七點打電話」、「今天台北會下雨嗎？」、「播放我的通勤歌單。」先把正在做的事完成。</p></div>
+          </article>
+          <article class="scenario-item">
+            <span class="scenario-number">03</span>
+            <div><h3>生活紀錄：想拍就拍，雙手保持自由</h3><p>遛狗、做菜、逛市集，都能用語音或實體按鍵留下第一人稱照片與短片，再從手機檢視、匯入與分享。</p><small>請在安全且取得他人同意的情況下使用拍攝功能。</small></div>
+          </article>
+          <article class="scenario-item">
+            <span class="scenario-number">04</span>
+            <div><h3>工作現場：留下更完整的第一人稱紀錄</h3><p>在巡檢、教學或設備操作時，快速拍下現場狀態、口述重點，再於手機或企業系統整理。</p><small>企業導入可依工作場所規範設定相機、錄音、資料保存與權限。</small></div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section trust" id="trust" aria-labelledby="trust-title">
+      <div class="container trust-grid">
+        <div class="trust-intro">
+          <span class="eyebrow">隱私與信任</span>
+          <h2 id="trust-title">你知道，它才開始工作。</h2>
+          <p>見境 JING 不把隱私藏在設定深處。從拍攝提示、權限，到資料流向與保存，都讓你知道、理解並控制。</p>
+          <a class="trust-link" href="#faq">了解我們的隱私設計 <span aria-hidden="true">↗</span></a>
+        </div>
+        <div class="trust-list">
+          <article class="trust-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="8.5"/><path d="M12 8v5l3 2"/></svg><h3>清楚提示拍攝狀態</h3><p>相機啟用時提供明顯的錄影／拍照提示，降低他人不知情的疑慮。</p></article>
+          <article class="trust-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M7 8.5h10M7 12h7M7 15.5h4"/><rect x="3.5" y="4.5" width="17" height="15" rx="2"/></svg><h3>權限分開管理</h3><p>相機、麥克風與資料同步可分別授權，不必一次全部開啟。</p></article>
+          <article class="trust-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3.5v17M7.5 7 12 3.5 16.5 7M7.5 17 12 20.5 16.5 17"/></svg><h3>資料由你掌握</h3><p>可在 App 中查看、匯出與刪除照片、錄音或轉錄內容；預設採較短保存週期。</p></article>
+          <article class="trust-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 17.5c3-4 5.2-7 8-7s5 3 8 7"/><path d="M4 6.5h16M4 20h16"/></svg><h3>說清楚資料流向</h3><p>需要網路的功能會明確標示，說明哪些資料送往雲端、用途為何，以及如何關閉或刪除。</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section-white" aria-labelledby="service-title">
+      <div class="container">
+        <div class="service-band">
+          <div><span class="eyebrow">配戴與服務</span><h2 id="service-title">科技要好用，也要戴得住。</h2><p>提供標準鏡框與度數鏡片選項，透過合作眼鏡行協助試戴、鼻墊與鏡片調整、換片及售後服務。先找到適合你的配戴方式，再決定是否帶它回家。</p></div>
+          <div class="service-side"><p class="price-label">主力產品預計價格帶</p><p class="price">NT$14,900–19,900</p><p class="fine-print">實際規格、鏡片選項、售價與上市時間，依最終產品及台灣相關認證完成後公告。</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section cta-wrap section-white" id="signup" aria-labelledby="signup-title">
+      <div class="container">
+        <div class="cta-card">
+          <div><span class="eyebrow">早鳥體驗計畫｜限量招募</span><h2 id="signup-title">下一次你想拿出手機之前，先試試看見境。</h2><p>留下資料，優先獲得體驗點試戴通知、上市前功能體驗與繁中語境測試資格，以及首發優惠與度數配鏡方案通知。</p></div>
+          <form class="signup-form" id="signup-form" novalidate>
+            <div class="form-row"><label class="sr-only" for="email">電子郵件</label><input id="email" name="email" type="email" required placeholder="請輸入你的電子郵件" autocomplete="email" aria-describedby="email-help form-message"><button class="button button-primary" type="submit">加入早鳥名單</button></div>
+            <p class="form-helper" id="email-help">此為前端 Demo；不會寄送 Email，也不會保存你輸入的資料。</p>
+            <details class="form-notice" id="privacy-notice">
+              <summary>查看台灣個資告知與撤回方式</summary>
+              <p>本 Demo 僅在瀏覽器內示範早鳥通知表單，不會把 Email 傳送給見境 JING、雲端服務或第三方，也不會建立正式名單。示範欄位為 Email；因此本 Demo 沒有實際保存期限、利用地區、受託對象或跨境傳輸。正式版本上線前，將另行公告蒐集目的、保存期間、資料處理／受託對象、查詢更正／刪除／停止利用方式、聯絡窗口與退訂方式；目前也沒有需要撤回的正式同意紀錄。</p>
+            </details>
+            <label class="consent"><input id="privacy-consent" name="privacyConsent" type="checkbox" required aria-describedby="privacy-notice form-message"><span>我已閱讀上方個資告知，並了解這是前端 Demo。</span></label>
+            <label class="consent consent--optional"><input id="marketing-consent" name="marketingConsent" type="checkbox"><span>若未來正式開放，我同意接收見境 JING 的早鳥體驗與產品消息；可隨時依正式通知方式退訂。</span></label>
+            <p class="form-message" id="form-message" role="status" aria-live="polite" tabindex="-1"></p>
+            <p class="fine-print">不代表預約、下單或加入正式名單；上市價格、規格與供貨時間將於確認後通知。</p>
+          </form>
+        </div>
+        <div style="display:flex; justify-content:center; margin-top:24px;"><a class="button button-link" href="#enterprise">申請企業試點 <span aria-hidden="true">↗</span></a></div>
+      </div>
+    </section>
+
+    <section class="section enterprise-wrap section-white" id="enterprise" aria-labelledby="enterprise-title">
+      <div class="container">
+        <div class="enterprise-card">
+          <div class="enterprise-intro">
+            <span class="eyebrow">企業試點</span>
+            <h2 id="enterprise-title">先理解工作流程，再驗證導入價值。</h2>
+            <p>適用於巡檢、遠端支援、導覽與訓練紀錄；我們會先了解資料權限與成功指標，再評估是否適合導入。</p>
+            <ul>
+              <li>第一人稱回報與現場巡檢</li>
+              <li>遠端專家支援與任務紀錄</li>
+              <li>SOP／訓練紀錄與工時改善</li>
+            </ul>
+            <p class="fine-print">此為企業試點需求 Demo，不會送出或保存資料，也不代表已建立正式試點。</p>
+          </div>
+          <form class="enterprise-form" id="enterprise-form" novalidate>
+            <div class="enterprise-fields">
+              <div class="field"><label for="company">公司／單位 <span aria-hidden="true">*</span></label><input id="company" name="company" required autocomplete="organization" aria-describedby="enterprise-message"></div>
+              <div class="field"><label for="role">職務 <span aria-hidden="true">*</span></label><input id="role" name="role" required autocomplete="organization-title" aria-describedby="enterprise-message"></div>
+              <div class="field"><label for="work-email">工作 Email <span aria-hidden="true">*</span></label><input id="work-email" name="workEmail" type="email" required autocomplete="work email" aria-describedby="enterprise-message"></div>
+              <div class="field"><label for="device-count">預估裝置數 <span aria-hidden="true">*</span></label><input id="device-count" name="deviceCount" type="number" min="1" max="10000" step="1" required inputmode="numeric" aria-describedby="enterprise-message"></div>
+              <div class="field"><label for="use-case">主要使用場景 <span aria-hidden="true">*</span></label><select id="use-case" name="useCase" required aria-describedby="enterprise-message"><option value="">請選擇</option><option>現場巡檢</option><option>遠端支援</option><option>導覽</option><option>訓練紀錄</option><option>其他工作流程</option></select></div>
+              <div class="field"><label for="data-sensitivity">資料敏感度 <span aria-hidden="true">*</span></label><select id="data-sensitivity" name="dataSensitivity" required aria-describedby="enterprise-message"><option value="">請選擇</option><option>一般工作資料</option><option>內部資料</option><option>機密／受規範資料</option></select></div>
+              <div class="field field--full"><label for="success-metric">希望驗證的成功指標 <span aria-hidden="true">*</span></label><textarea id="success-metric" name="successMetric" required placeholder="例如：單件任務時間、錯誤率、遠端解決率或訓練工時" aria-describedby="enterprise-message"></textarea></div>
+            </div>
+            <details class="form-notice" id="enterprise-data-notice">
+              <summary>查看企業資料處理說明</summary>
+              <p>本 Demo 僅在瀏覽器內檢查欄位格式，不會送出或保存公司、職務、Email、使用場景、裝置數、資料敏感度或成功指標。正式企業試點前，將另行確認資料處理者／控制者、保存期限、機密資料隔離、權限、聯絡窗口與試點 SLA。</p>
+            </details>
+            <label class="consent"><input id="enterprise-consent" name="enterpriseConsent" type="checkbox" required aria-describedby="enterprise-data-notice enterprise-message"><span>我已閱讀企業資料處理說明，並了解這是前端 Demo。</span></label>
+            <button class="button button-dark" type="submit">送出企業試點需求（Demo）</button>
+            <p class="form-message" id="enterprise-message" role="status" aria-live="polite" tabindex="-1"></p>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section-sage" id="faq" aria-labelledby="faq-title">
+      <div class="container faq-grid">
+        <div><span class="eyebrow">常見問題</span><h2 id="faq-title">先把你在意的，說清楚。</h2><p>見境 JING 是日常的輔助工具，不會取代你的判斷；涉及安全、交通、金錢或重要決策的資訊，請務必自行確認。</p></div>
+        <div class="faq-list">
+          <details><summary>這是有顯示器的 AR 眼鏡嗎？</summary><p>首發版本以 AI、相機與開放式音訊為核心，重點是語音互動、拍攝、翻譯與生活助理，不以高複雜度的視野內顯示為首發承諾。後續是否加入顯示功能，會依實際使用需求與驗證結果決定。</p></details>
+          <details><summary>一定要連接手機或網路嗎？</summary><p>部分功能需要透過手機 App 或網路完成，例如 AI 問答、翻譯與內容同步；拍攝、音訊等基本功能依最終規格提供。各功能的連線需求會在 App 與產品說明中清楚標示。</p></details>
+          <details><summary>它會不會一直錄音或偷拍？</summary><p>見境 JING 會提供相機啟用提示、錄音與相機分開授權，以及 App 內的內容管理功能。使用者仍應遵守場所規範，拍攝或錄音前取得必要同意。</p></details>
+          <details><summary>AI 回答一定正確嗎？</summary><p>不一定。AI 可能誤解語音、影像或情境，因此我們會在適當功能中提示限制；涉及交通、安全、金錢、健康或工作決策的資訊，請以可靠來源再次確認。</p></details>
+          <details><summary>可以配戴度數鏡片嗎？</summary><p>規劃提供度數鏡片與眼鏡行配鏡服務，實際適用度數、鏡片種類、費用與交期，須依鏡框及合作店家評估。</p></details>
+          <details><summary>這是醫療或視力輔助產品嗎？</summary><p>不是。見境 JING 不提供疾病診斷、治療、視力改善或其他醫療效能宣稱；如有健康需求，請諮詢合格醫療專業人員。</p></details>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-intro"><a class="brand" href="#top">見境 <span>JING</span><small>SMART GLASSES</small></a><p>看見就能問，開口就能做。</p></div>
+        <nav class="footer-nav" aria-label="頁尾導覽"><a href="#values">功能介紹</a><a href="#scenarios">在地探索</a><a href="#values">體驗流程</a><a href="#scenarios">工作場景</a><a href="#trust">隱私設計</a><a href="#faq">常見問題</a><a href="#trust">資料管理</a><a href="#signup">早鳥試用</a></nav>
+        <div><p style="margin:0; max-width:250px; font-size:.8rem;">本頁為上市前產品與行銷文案提案。功能、規格、價格、上市時間、認證與服務內容，應以正式公告為準。</p></div>
+      </div>
+      <div class="footer-meta"><p>© 2026 見境 JING. Demo prototype.</p><p>AI 回應可能出錯，重要資訊請交叉確認。</p></div>
+    </div>
+  </footer>
+
+  <script>
+    function clearInvalid(fields) {
+      fields.forEach(function (field) {
+        field.removeAttribute('aria-invalid');
+      });
+    }
+
+    function showError(message, fields, target) {
+      clearInvalid(fields);
+      const invalidField = fields.find(function (field) { return !field.checkValidity(); });
+      if (invalidField) {
+        invalidField.setAttribute('aria-invalid', 'true');
+        invalidField.focus();
+      }
+      target.classList.add('is-error');
+      target.classList.remove('is-success');
+      target.textContent = message;
+    }
+
+    function showSuccess(message, fields, form, target) {
+      clearInvalid(fields);
+      form.reset();
+      target.classList.add('is-success');
+      target.classList.remove('is-error');
+      target.textContent = message;
+      target.focus();
+    }
+
+    const signupForm = document.getElementById('signup-form');
+    const signupEmail = document.getElementById('email');
+    const privacyConsent = document.getElementById('privacy-consent');
+    const signupFields = [signupEmail, privacyConsent];
+    const signupMessage = document.getElementById('form-message');
+
+    signupForm.addEventListener('submit', function (event) {
+      event.preventDefault();
+      signupEmail.value = signupEmail.value.trim();
+      if (!signupEmail.value) {
+        showError('請輸入 Email，才能完成早鳥通知 Demo 的欄位驗證。', signupFields, signupMessage);
+        return;
+      }
+      if (!signupEmail.validity.valid) {
+        showError('請確認 Email 格式正確，例如 name@example.com。', signupFields, signupMessage);
+        return;
+      }
+      if (!privacyConsent.checked) {
+        showError('請先閱讀個資告知並勾選確認，才能完成 Demo 驗證。', signupFields, signupMessage);
+        return;
+      }
+      showSuccess('Demo 驗證完成；此頁不會寄送 Email 或保存資料，也不代表已完成預約、下單或加入正式名單。', signupFields, signupForm, signupMessage);
+    });
+
+    const enterpriseForm = document.getElementById('enterprise-form');
+    const enterpriseFields = [
+      document.getElementById('company'),
+      document.getElementById('role'),
+      document.getElementById('work-email'),
+      document.getElementById('device-count'),
+      document.getElementById('use-case'),
+      document.getElementById('data-sensitivity'),
+      document.getElementById('success-metric'),
+      document.getElementById('enterprise-consent')
+    ];
+    const enterpriseMessage = document.getElementById('enterprise-message');
+
+    enterpriseForm.addEventListener('submit', function (event) {
+      event.preventDefault();
+      enterpriseFields.slice(0, -1).forEach(function (field) { field.value = field.value.trim ? field.value.trim() : field.value; });
+      if (!enterpriseFields.every(function (field) { return field.checkValidity(); })) {
+        showError('請完成公司／單位、職務、工作 Email、裝置數、使用場景、資料敏感度、成功指標與資料處理告知確認。', enterpriseFields, enterpriseMessage);
+        return;
+      }
+      showSuccess('企業試點需求 Demo 驗證完成；此頁不會送出或保存資料，也不代表已建立正式試點。', enterpriseFields, enterpriseForm, enterpriseMessage);
+    });
+  </script>
+</body>
+</html>
